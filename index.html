@@ -522,24 +522,12 @@
         // Data storage
         let papers = JSON.parse(localStorage.getItem('thesisPapers') || '[]');
 
-        // === Google Sheets Integration ===
-        // To enable cross‑device persistence, data can be appended to a Google Sheet. Provide
-        // your API key and spreadsheet ID below. The sheet must have a header row
-        // defining the columns in the same order as the values passed in
-        // `appendPaperToSheet`. See the README for setup instructions.
-        const API_KEY = 'YOUR_API_KEY';
-        const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
-        const SHEET_NAME = 'Sheet1';
+        // === CSV Export Integration ===
+        // Data is persisted locally using localStorage. To back up or share your data,
+        // use the Export tab to download a JSON or CSV file. You can then commit the
+        // exported `thesis_data.csv` into your repository manually. This avoids the need
+        // for external services and keeps your data within this project.
 
-        // Append a paper record to the Google Sheet. Each call adds a new row with
-        // the paper's fields. If the API key or spreadsheet ID are not set, this
-        // function will silently exit. Errors are logged to the console.
-        async function appendPaperToSheet(paper) {
-            // If placeholders haven't been replaced, don't attempt to call the API
-            if (!API_KEY || !SPREADSHEET_ID || API_KEY === 'YOUR_API_KEY' || SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID') {
-                console.warn('Google Sheets API key and spreadsheet ID are not configured. Skipping remote save.');
-                return;
-            }
             const endpoint = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A1:append?valueInputOption=USER_ENTERED&key=${API_KEY}`;
             // Prepare a flat array of values in the same order as the header row
             const values = [[
@@ -688,8 +676,7 @@
 
             localStorage.setItem('thesisPapers', JSON.stringify(papers));
 
-            // Append to Google Sheets asynchronously; errors are handled in the helper
-            appendPaperToSheet(paper);
+            // Data is stored locally using localStorage; use the Export tab to download a backup
             clearForm();
             alert('Paper saved successfully!');
             updateFilterDropdown();
