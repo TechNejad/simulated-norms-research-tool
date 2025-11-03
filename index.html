@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulated Norms - Thesis Research Tool</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: #f5f5f4;
+        }
+        
+        .gradient-header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .tabs {
+            background: white;
+            border-bottom: 2px solid #d6d3d1;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .tab-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 2rem;
+            padding: 0 2rem;
+        }
+        
+        .tab {
+            padding: 1rem 0.5rem;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            color: #475569;
+        }
+        
+        .tab.active {
+            color: #334155;
+            border-bottom-color: #334155;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        input[id$="Custom"] {
+            border-color: #cbd5e1;
+            background: #fafaf9;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #475569;
+            box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1);
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .button-primary {
+            background: linear-gradient(135deg, #334155 0%, #475569 100%);
+            color: white;
+        }
+        
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(51, 65, 85, 0.3);
+        }
+        
+        .button-secondary {
+            background: white;
+            border: 2px solid #e5e7eb;
+            color: #374151;
+        }
+        
+        .button-secondary:hover {
+            background: #fafaf9;
+        }
+        
+        .button-danger {
+            background: #78716c;
+            color: white;
+        }
+        
+        .button-danger:hover {
+            background: #57534e;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+        
+        .badge-blue { background: #dbeafe; color: #1e3a8a; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-orange { background: #ffedd5; color: #9a3412; }
+        .badge-purple { background: #e9d5ff; color: #6b21a8; }
+        .badge-yellow { background: #fef3c7; color: #92400e; }
+        
+        /* Prompt-Behavior Match Color Coding */
+        .match-full { background: #fce7f3; color: #831843; border: 2px solid #f9a8d4; }
+        .match-partial { background: #fef3c7; color: #92400e; border: 2px solid #fde68a; }
+        .match-none { background: #fee2e2; color: #991b1b; border: 2px solid #fca5a5; }
+        .match-unclear { background: #e5e7eb; color: #374151; border: 2px solid #d1d5db; }
+        .match-over { background: #dbeafe; color: #1e40af; border: 2px solid #93c5fd; }
+        .match-under { background: #fef3c7; color: #854d0e; border: 2px solid #fcd34d; }
+        
+        /* Contradiction highlighting */
+        .has-contradiction { background: #fee2e2; border-left: 4px solid #dc2626; }
+        .no-contradiction { background: #f0fdf4; border-left: 4px solid #16a34a; }
+        
+        .paper-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .paper-card.has-contradiction {
+            border-left-color: #dc2626;
+            background: #fffbfb;
+        }
+        
+        .paper-card.no-contradiction {
+            border-left-color: #16a34a;
+            background: #fbfefb;
+        }
+        
+        .paper-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            padding: 2rem;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card p {
+            opacity: 0.9;
+        }
+        
+        .bg-blue { background: #475569; }
+        .bg-green { background: #52525b; }
+        .bg-purple { background: #64748b; }
+        .bg-orange { background: #57534e; }
+        
+        .section-header {
+            border-left: 4px solid;
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-header.blue { border-color: #475569; }
+        .section-header.green { border-color: #52525b; }
+        .section-header.purple { border-color: #64748b; }
+        .section-header.orange { border-color: #78716c; }
+        .section-header.red { border-color: #78716c; }
+        
+        .contradiction-box {
+            background: #f5f5f4;
+            border-left: 4px solid #78716c;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.5rem;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        
+        .empty-state p {
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-header">
+        <div class="container">
+            <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">Simulated Norms Research Tool</h1>
+            <p style="opacity: 0.9;">Ontological Analysis of Normative Role Design in Multi-Agent LLM Systems</p>
+            <p style="opacity: 0.8; font-size: 0.875rem; margin-top: 0.5rem;">Mohsen Hassan Nejad • AISS Erasmus Mundus • 2025-2026</p>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab-container">
+            <button class="tab active" onclick="switchTab('entry')">📝 Data Entry</button>
+            <button class="tab" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="tab" onclick="switchTab('browser')">🔍 Browse Papers</button>
+            <button class="tab" onclick="switchTab('export')">💾 Export</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Data Entry Tab -->
+        <div id="entry-tab" class="tab-content active">
+            <div class="card">
+                <h2 style="margin-bottom: 1.5rem; font-size: 1.875rem;">New Paper Entry</h2>
+                
+                <form id="paper-form" onsubmit="savePaper(event)">
+                    <div class="section-header blue">
+                        <h3>Basic Information</h3>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Paper Title *</label>
+                            <input type="text" id="title" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Authors *</label>
+                            <input type="text" id="authors" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Year</label>
+                            <input type="number" id="year" value="2024">
+                        </div>
+                        <div class="form-group">
+                            <label>GitHub Link</label>
+                            <input type="url" id="githubLink">
+                        </div>
+                        <div class="form-group">
+                            <label>Paper Link (DOI, ArXiv, etc.)</label>
+                            <input type="url" id="paperLink">
+                        </div>
+                    </div>
+
+                    <div class="section-header purple">
+                        <h3>System Prompt</h3>
+                    </div>
+                    <div class="form-group">
+                        <label>System Prompt (Verbatim) *</label>
+                        <textarea id="systemPrompt" rows="4" required></textarea>
+                    </div>
+
+                    <div class="section-header green">
+                        <h3>Classification</h3>
+                    </div>
+                    <div class="grid-3">
+                        <div class="form-group">
+                            <label>Role Type *</label>
+                            <select id="roleType" required onchange="toggleCustomInput('roleType')">
+                                <option value="">Select...</option>
+                                <option>Rule-bound</option>
+                                <option>Goal-oriented</option>
+                                <option>Identity-based</option>
+                                <option>Emergent</option>
+                                <option>Hybrid</option>
+                                <option value="custom">Other - Custom</option>
+                            </select>
+                            <input type="text" id="roleTypeCustom" placeholder="Enter custom role type" style="display: none; margin-top: 0.5rem;">
+                        </div>
+                        <div class="form-group">
+                            <label>Ethical Framework *</label>
+                            <select id="ethicalFramework" required onchange="toggleCustomInput('ethicalFramework')">
+                                <option value="">Select...</option>
+                                <option>Deontological</option>
+                                <option>Consequentialist</option>
+                                <option>Virtue Ethics</option>
+                                <option>Mixed</option>
+                                <option>Not Specified</option>
+                                <option value="custom">Other - Custom</option>
+                            </select>
+                            <input type="text" id="ethicalFrameworkCustom" placeholder="Enter custom framework" style="display: none; margin-top: 0.5rem;">
+                        </div>
+                        <div class="form-group">
+                            <label>Normative Mechanism *</label>
+                            <select id="normativeMechanism" required onchange="toggleCustomInput('normativeMechanism')">
+                                <option value="">Select...</option>
+                                <option>Fairness</option>
+                                <option>Reciprocity</option>
+                                <option>Duty</option>
+                                <option>Identity</option>
+                                <option>Utility</option>
+                                <option>Cooperation</option>
+                                <option>Transparency</option>
+                                <option>Accountability</option>
+                                <option>Trust</option>
+                                <option>Other</option>
+                                <option value="custom">Other - Custom</option>
+                            </select>
+                            <input type="text" id="normativeMechanismCustom" placeholder="Enter custom mechanism" style="display: none; margin-top: 0.5rem;">
+                        </div>
+                        <div class="form-group">
+                            <label>Prompt-Behavior Match *</label>
+                            <select id="promptBehaviorMatch" required onchange="toggleCustomInput('promptBehaviorMatch')">
+                                <option value="">Select...</option>
+                                <option>Full Match</option>
+                                <option>Partial Match</option>
+                                <option>No Match</option>
+                                <option>Unclear</option>
+                                <option>Over-performed</option>
+                                <option>Under-performed</option>
+                                <option value="custom">Other - Custom</option>
+                            </select>
+                            <input type="text" id="promptBehaviorMatchCustom" placeholder="Enter custom match type" style="display: none; margin-top: 0.5rem;">
+                        </div>
+                        <div class="form-group">
+                            <label>Simulation Domain *</label>
+                            <select id="simulationDomain" required onchange="toggleCustomInput('simulationDomain')">
+                                <option value="">Select...</option>
+                                <option>Negotiation</option>
+                                <option>Governance</option>
+                                <option>Resource Allocation</option>
+                                <option>Game Theory</option>
+                                <option>Social Dilemma</option>
+                                <option>Conflict Resolution</option>
+                                <option>Decision Making</option>
+                                <option>Collaboration</option>
+                                <option>Other</option>
+                                <option value="custom">Other - Custom</option>
+                            </select>
+                            <input type="text" id="simulationDomainCustom" placeholder="Enter custom domain" style="display: none; margin-top: 0.5rem;">
+                        </div>
+                        <div class="form-group">
+                            <label>Nature of Role *</label>
+                            <select id="natureOfRole" required onchange="toggleCustomInput('natureOfRole')">
+                                <option value="">Select...</option>
+                                <option>Designed</option>
+                                <option>Emergent</option>
+                                <option>Hybrid</option>
+                                <option value="custom">Other - Custom</option>
+                            </select>
+                            <input type="text" id="natureOfRoleCustom" placeholder="Enter custom nature" style="display: none; margin-top: 0.5rem;">
+                        </div>
+                    </div>
+
+                    <div class="section-header orange">
+                        <h3>Behavior & Outcomes</h3>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Observed Behavior *</label>
+                            <textarea id="observedBehavior" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Simulation Outcome *</label>
+                            <textarea id="simulationOutcome" rows="3" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="section-header red">
+                        <h3>Analysis & Notes</h3>
+                    </div>
+                    <div class="form-group">
+                        <label>Contradiction/Tension</label>
+                        <textarea id="contradictionTension" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Notes</label>
+                        <textarea id="notes" rows="2"></textarea>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="button button-secondary" onclick="clearForm()">Clear Form</button>
+                        <button type="submit" class="button button-primary">Save Paper</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard-tab" class="tab-content">
+            <div id="dashboard-content"></div>
+        </div>
+
+        <!-- Browser Tab -->
+        <div id="browser-tab" class="tab-content">
+            <div class="card">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search papers..." style="flex: 1;">
+                    <select id="filterDomain" style="width: 200px;">
+                        <option value="all">All Domains</option>
+                    </select>
+                </div>
+            </div>
+            <div id="papers-list"></div>
+        </div>
+
+        <!-- Export Tab -->
+        <div id="export-tab" class="tab-content">
+            <div class="card">
+                <h2 style="margin-bottom: 1.5rem;">Export Your Data</h2>
+                <div class="grid-2">
+                    <button class="button button-primary" onclick="exportData('json')" style="padding: 2rem;">
+                        <div style="font-size: 1.25rem;">📥 Export as JSON</div>
+                        <div style="opacity: 0.8; font-size: 0.875rem; margin-top: 0.5rem;">For Obsidian, other tools</div>
+                    </button>
+                    <button class="button button-primary" onclick="exportData('csv')" style="padding: 2rem;">
+                        <div style="font-size: 1.25rem;">📊 Export as CSV</div>
+                        <div style="opacity: 0.8; font-size: 0.875rem; margin-top: 0.5rem;">For Excel, SPSS, analysis</div>
+                    </button>
+                </div>
+                <div id="export-summary"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let papers = JSON.parse(localStorage.getItem('thesisPapers') || '[]');
+
+        // === Google Sheets Integration ===
+        // To enable cross‑device persistence, data can be appended to a Google Sheet. Provide
+        // your API key and spreadsheet ID below. The sheet must have a header row
+        // defining the columns in the same order as the values passed in
+        // `appendPaperToSheet`. See the README for setup instructions.
+        const API_KEY = 'YOUR_API_KEY';
+        const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID';
+        const SHEET_NAME = 'Sheet1';
+
+        // Append a paper record to the Google Sheet. Each call adds a new row with
+        // the paper's fields. If the API key or spreadsheet ID are not set, this
+        // function will silently exit. Errors are logged to the console.
+        async function appendPaperToSheet(paper) {
+            // If placeholders haven't been replaced, don't attempt to call the API
+            if (!API_KEY || !SPREADSHEET_ID || API_KEY === 'YOUR_API_KEY' || SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID') {
+                console.warn('Google Sheets API key and spreadsheet ID are not configured. Skipping remote save.');
+                return;
+            }
+            const endpoint = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!A1:append?valueInputOption=USER_ENTERED&key=${API_KEY}`;
+            // Prepare a flat array of values in the same order as the header row
+            const values = [[
+                paper.id,
+                paper.title,
+                paper.authors,
+                paper.year,
+                paper.githubLink,
+                paper.paperLink,
+                paper.systemPrompt,
+                paper.roleType,
+                paper.ethicalFramework,
+                paper.normativeMechanism,
+                paper.promptBehaviorMatch,
+                paper.simulationDomain,
+                paper.natureOfRole,
+                paper.observedBehavior,
+                paper.simulationOutcome,
+                paper.contradictionTension,
+                paper.notes
+            ]];
+            const body = { values };
+            try {
+                await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+            } catch (err) {
+                console.error('Failed to append data to Google Sheets:', err);
+            }
+        }
+        let editingId = null;
+
+        // Toggle custom input visibility
+        function toggleCustomInput(fieldName) {
+            const select = document.getElementById(fieldName);
+            const customInput = document.getElementById(fieldName + 'Custom');
+            
+            if (select.value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.required = true;
+            } else {
+                customInput.style.display = 'none';
+                customInput.required = false;
+                customInput.value = '';
+            }
+        }
+
+        // Get field value (handles custom inputs)
+        function getFieldValue(fieldName) {
+            const select = document.getElementById(fieldName);
+            const customInput = document.getElementById(fieldName + 'Custom');
+            
+            if (select.value === 'custom' && customInput.value) {
+                return customInput.value;
+            }
+            return select.value;
+        }
+
+        // Set field value (handles custom inputs)
+        function setFieldValue(fieldName, value) {
+            const select = document.getElementById(fieldName);
+            const customInput = document.getElementById(fieldName + 'Custom');
+            
+            // Check if value is in the predefined options
+            const options = Array.from(select.options).map(opt => opt.value);
+            
+            if (options.includes(value)) {
+                select.value = value;
+                customInput.style.display = 'none';
+                customInput.required = false;
+            } else {
+                // It's a custom value
+                select.value = 'custom';
+                customInput.value = value;
+                customInput.style.display = 'block';
+                customInput.required = true;
+            }
+        }
+
+        // Get match class based on value
+        function getMatchClass(match) {
+            const matchMap = {
+                'Full Match': 'match-full',
+                'Partial Match': 'match-partial',
+                'No Match': 'match-none',
+                'Unclear': 'match-unclear',
+                'Over-performed': 'match-over',
+                'Under-performed': 'match-under'
+            };
+            return matchMap[match] || 'match-unclear';
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderDashboard();
+            renderPapersList();
+            renderExportSummary();
+            updateFilterDropdown();
+        });
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            if (tabName === 'dashboard') renderDashboard();
+            if (tabName === 'browser') renderPapersList();
+            if (tabName === 'export') renderExportSummary();
+        }
+
+        // Save paper
+        async function savePaper(event) {
+            event.preventDefault();
+            
+            const paper = {
+                id: editingId || Date.now(),
+                title: document.getElementById('title').value,
+                authors: document.getElementById('authors').value,
+                year: document.getElementById('year').value,
+                githubLink: document.getElementById('githubLink').value,
+                paperLink: document.getElementById('paperLink').value,
+                systemPrompt: document.getElementById('systemPrompt').value,
+                roleType: getFieldValue('roleType'),
+                ethicalFramework: getFieldValue('ethicalFramework'),
+                normativeMechanism: getFieldValue('normativeMechanism'),
+                promptBehaviorMatch: getFieldValue('promptBehaviorMatch'),
+                simulationDomain: getFieldValue('simulationDomain'),
+                natureOfRole: getFieldValue('natureOfRole'),
+                observedBehavior: document.getElementById('observedBehavior').value,
+                simulationOutcome: document.getElementById('simulationOutcome').value,
+                contradictionTension: document.getElementById('contradictionTension').value,
+                notes: document.getElementById('notes').value
+            };
+
+            if (editingId) {
+                papers = papers.map(p => p.id === editingId ? paper : p);
+                editingId = null;
+            } else {
+                papers.push(paper);
+            }
+
+            localStorage.setItem('thesisPapers', JSON.stringify(papers));
+
+            // Append to Google Sheets asynchronously; errors are handled in the helper
+            appendPaperToSheet(paper);
+            clearForm();
+            alert('Paper saved successfully!');
+            updateFilterDropdown();
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('paper-form').reset();
+            document.getElementById('year').value = new Date().getFullYear();
+            editingId = null;
+            
+            // Hide all custom inputs
+            ['roleType', 'ethicalFramework', 'normativeMechanism', 'promptBehaviorMatch', 'simulationDomain', 'natureOfRole'].forEach(field => {
+                const customInput = document.getElementById(field + 'Custom');
+                if (customInput) {
+                    customInput.style.display = 'none';
+                    customInput.required = false;
+                    customInput.value = '';
+                }
+            });
+        }
+
+        // Render dashboard
+        function renderDashboard() {
+            const container = document.getElementById('dashboard-content');
+            
+            if (papers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Data Yet</h3>
+                        <p>Start by adding papers in the Data Entry tab</p>
+                        <button class="button button-primary" onclick="switchTab('entry')">Add First Paper</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const stats = {
+                total: papers.length,
+                contradictions: papers.filter(p => p.contradictionTension?.length > 10).length,
+                domains: [...new Set(papers.map(p => p.simulationDomain))].length
+            };
+
+            const roleTypes = {};
+            const frameworks = {};
+            
+            papers.forEach(p => {
+                roleTypes[p.roleType] = (roleTypes[p.roleType] || 0) + 1;
+                frameworks[p.ethicalFramework] = (frameworks[p.ethicalFramework] || 0) + 1;
+            });
+
+            container.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card bg-blue">
+                        <h3>${stats.total}</h3>
+                        <p>Total Papers</p>
+                    </div>
+                    <div class="stat-card bg-green">
+                        <h3>${stats.contradictions}</h3>
+                        <p>With Contradictions</p>
+                    </div>
+                    <div class="stat-card bg-purple">
+                        <h3>${stats.domains}</h3>
+                        <p>Unique Domains</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">Role Types Distribution</h3>
+                    ${Object.entries(roleTypes).map(([type, count]) => `
+                        <div style="margin-bottom: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span>${type}</span>
+                                <strong>${count}</strong>
+                            </div>
+                            <div style="background: #e5e7eb; height: 8px; border-radius: 4px; overflow: hidden;">
+                                <div style="background: #475569; height: 100%; width: ${(count/papers.length)*100}%;"></div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">Ethical Frameworks Distribution</h3>
+                    ${Object.entries(frameworks).map(([fw, count]) => `
+                        <div style="margin-bottom: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <span>${fw}</span>
+                                <strong>${count}</strong>
+                            </div>
+                            <div style="background: #e5e7eb; height: 8px; border-radius: 4px; overflow: hidden;">
+                                <div style="background: #52525b; height: 100%; width: ${(count/papers.length)*100}%;"></div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">Color Coding Legend</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <div>
+                            <p style="font-weight: 600; margin-bottom: 0.5rem;">Prompt-Behavior Match:</p>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <span class="badge match-full">Full Match</span>
+                                <span class="badge match-partial">Partial Match</span>
+                                <span class="badge match-none">No Match</span>
+                                <span class="badge match-over">Over-performed</span>
+                                <span class="badge match-under">Under-performed</span>
+                                <span class="badge match-unclear">Unclear</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p style="font-weight: 600; margin-bottom: 0.5rem;">Card Border Indicator:</p>
+                            <div style="padding: 0.75rem; background: #fee2e2; border-left: 4px solid #dc2626; border-radius: 8px; margin-bottom: 0.5rem;">
+                                <span style="color: #991b1b; font-weight: 600;">Red = Has Contradiction</span>
+                            </div>
+                            <div style="padding: 0.75rem; background: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 8px;">
+                                <span style="color: #166534; font-weight: 600;">Green = No Contradiction</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p style="font-weight: 600; margin-bottom: 0.5rem;">Category Badges:</p>
+                            <span class="badge badge-blue">Role Type</span>
+                            <span class="badge badge-green">Ethical Framework</span>
+                            <span class="badge badge-yellow">Mechanism</span>
+                            <span class="badge badge-purple">Domain</span>
+                            <span class="badge badge-orange">Nature</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render papers list
+        function renderPapersList() {
+            const container = document.getElementById('papers-list');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filterDomain = document.getElementById('filterDomain').value;
+
+            let filtered = papers.filter(p => {
+                const matchesSearch = p.title?.toLowerCase().includes(searchTerm) || 
+                                    p.authors?.toLowerCase().includes(searchTerm);
+                const matchesDomain = filterDomain === 'all' || p.simulationDomain === filterDomain;
+                return matchesSearch && matchesDomain;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No papers found</h3>
+                        <p>Try adjusting your search or filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(paper => `
+                <div class="paper-card ${paper.contradictionTension && paper.contradictionTension.length > 10 ? 'has-contradiction' : 'no-contradiction'}">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">${paper.title}</h3>
+                            <p style="color: #6b7280;">${paper.authors} (${paper.year})</p>
+                            ${paper.paperLink ? `<a href="${paper.paperLink}" target="_blank" style="color: #475569; text-decoration: underline; font-size: 0.875rem;">📄 View Paper</a>` : ''}
+                            ${paper.githubLink ? `<a href="${paper.githubLink}" target="_blank" style="color: #475569; text-decoration: underline; font-size: 0.875rem; margin-left: 1rem;">💻 GitHub</a>` : ''}
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="button button-secondary" onclick="editPaper(${paper.id})" style="padding: 0.5rem 1rem;">Edit</button>
+                            <button class="button button-danger" onclick="deletePaper(${paper.id})" style="padding: 0.5rem 1rem;">Delete</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <span class="badge badge-blue">${paper.roleType}</span>
+                        <span class="badge badge-green">${paper.ethicalFramework}</span>
+                        <span class="badge badge-yellow">${paper.normativeMechanism}</span>
+                        <span class="badge badge-purple">${paper.simulationDomain}</span>
+                        <span class="badge badge-orange">${paper.natureOfRole}</span>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <span class="badge ${getMatchClass(paper.promptBehaviorMatch)}" style="padding: 0.5rem 1rem; font-weight: 700;">
+                            Match: ${paper.promptBehaviorMatch}
+                        </span>
+                    </div>
+
+                    <div style="background: #fafaf9; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <p style="font-size: 0.875rem; font-family: monospace;">${paper.systemPrompt.substring(0, 200)}...</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.875rem;">
+                        <div>
+                            <strong>Behavior:</strong>
+                            <p style="color: #6b7280;">${paper.observedBehavior}</p>
+                        </div>
+                        <div>
+                            <strong>Outcome:</strong>
+                            <p style="color: #6b7280;">${paper.simulationOutcome}</p>
+                        </div>
+                    </div>
+
+                    ${paper.contradictionTension && paper.contradictionTension.length > 10 ? `
+                        <div style="margin-top: 1rem; background: #fee2e2; border-left: 4px solid #dc2626; padding: 1rem; border-radius: 8px;">
+                            <strong style="color: #991b1b;">⚠️ Contradiction/Tension:</strong>
+                            <p style="color: #7f1d1d; margin-top: 0.5rem;">${paper.contradictionTension}</p>
+                        </div>
+                    ` : `
+                        <div style="margin-top: 1rem; background: #f0fdf4; border-left: 4px solid #16a34a; padding: 0.75rem; border-radius: 8px;">
+                            <span style="color: #166534; font-weight: 600;">✓ No Contradiction Observed</span>
+                        </div>
+                    `}
+                </div>
+            `).join('');
+        }
+
+        // Edit paper
+        function editPaper(id) {
+            const paper = papers.find(p => p.id === id);
+            if (!paper) return;
+
+            editingId = id;
+            
+            document.getElementById('title').value = paper.title;
+            document.getElementById('authors').value = paper.authors;
+            document.getElementById('year').value = paper.year;
+            document.getElementById('githubLink').value = paper.githubLink || '';
+            document.getElementById('paperLink').value = paper.paperLink || '';
+            document.getElementById('systemPrompt').value = paper.systemPrompt;
+            
+            // Use setFieldValue for dropdown fields
+            setFieldValue('roleType', paper.roleType);
+            setFieldValue('ethicalFramework', paper.ethicalFramework);
+            setFieldValue('normativeMechanism', paper.normativeMechanism);
+            setFieldValue('promptBehaviorMatch', paper.promptBehaviorMatch);
+            setFieldValue('simulationDomain', paper.simulationDomain);
+            setFieldValue('natureOfRole', paper.natureOfRole);
+            
+            document.getElementById('observedBehavior').value = paper.observedBehavior;
+            document.getElementById('simulationOutcome').value = paper.simulationOutcome;
+            document.getElementById('contradictionTension').value = paper.contradictionTension || '';
+            document.getElementById('notes').value = paper.notes || '';
+
+            switchTab('entry');
+        }
+
+        // Delete paper
+        function deletePaper(id) {
+            if (!confirm('Delete this paper?')) return;
+            
+            papers = papers.filter(p => p.id !== id);
+            localStorage.setItem('thesisPapers', JSON.stringify(papers));
+            renderPapersList();
+            renderDashboard();
+            renderExportSummary();
+            updateFilterDropdown();
+        }
+
+        // Export data
+        function exportData(format) {
+            if (papers.length === 0) {
+                alert('No data to export!');
+                return;
+            }
+
+            if (format === 'json') {
+                const dataStr = JSON.stringify(papers, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'thesis_data.json';
+                link.click();
+            } else if (format === 'csv') {
+                const headers = Object.keys(papers[0]);
+                const csv = [
+                    headers.join(','),
+                    ...papers.map(p => headers.map(h => `"${(p[h] || '').toString().replace(/"/g, '""')}"`).join(','))
+                ].join('\n');
+                const dataBlob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'thesis_data.csv';
+                link.click();
+            }
+        }
+
+        // Render export summary
+        function renderExportSummary() {
+            const container = document.getElementById('export-summary');
+            container.innerHTML = `
+                <div style="background: #fafaf9; padding: 1.5rem; border-radius: 12px; margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Data Summary</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div>
+                            <p style="color: #6b7280;">Total Papers:</p>
+                            <p style="font-size: 1.5rem; font-weight: bold;">${papers.length}</p>
+                        </div>
+                        <div>
+                            <p style="color: #6b7280;">With Paper Links:</p>
+                            <p style="font-size: 1.5rem; font-weight: bold;">${papers.filter(p => p.paperLink).length}</p>
+                        </div>
+                        <div>
+                            <p style="color: #6b7280;">With GitHub Links:</p>
+                            <p style="font-size: 1.5rem; font-weight: bold;">${papers.filter(p => p.githubLink).length}</p>
+                        </div>
+                        <div>
+                            <p style="color: #6b7280;">With Contradictions:</p>
+                            <p style="font-size: 1.5rem; font-weight: bold;">${papers.filter(p => p.contradictionTension?.length > 10).length}</p>
+                        </div>
+                        <div>
+                            <p style="color: #6b7280;">Complete Entries:</p>
+                            <p style="font-size: 1.5rem; font-weight: bold;">${papers.filter(p => p.notes?.length > 0).length}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update filter dropdown
+        function updateFilterDropdown() {
+            const domains = [...new Set(papers.map(p => p.simulationDomain))];
+            const select = document.getElementById('filterDomain');
+            select.innerHTML = '<option value="all">All Domains</option>' + 
+                domains.map(d => `<option value="${d}">${d}</option>`).join('');
+        }
+
+        // Search and filter handlers
+        document.getElementById('searchInput')?.addEventListener('input', renderPapersList);
+        document.getElementById('filterDomain')?.addEventListener('change', renderPapersList);
+    </script>
+</body>
+</html>
